@@ -15,9 +15,8 @@ build/
 .pytest_cache/
 .mypy_cache/
 
-# Logs
-logs/*.log
-logs/*.json
+logs/
+!logs/.gitkeep
 
 # IDE
 .vscode/
