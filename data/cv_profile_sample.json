@@ -1,0 +1,174 @@
+{
+    "name": "John Doe",
+    "title": "Senior Software Engineer",
+    "summary": "Experienced software engineer with 7+ years of expertise in backend development, cloud architecture, and AI/ML systems. Passionate about building scalable distributed systems and leveraging LLM-based agents for automation.",
+    "contact": {
+        "email": "john.doe@email.com",
+        "linkedin": "https://linkedin.com/in/johndoe",
+        "github": "https://github.com/johndoe",
+        "location": "Istanbul, Turkey"
+    },
+    "experience": [
+        {
+            "company": "TechCorp Inc.",
+            "role": "Senior Software Engineer",
+            "period": "2021 – Present",
+            "description": "Leading backend team of 5 engineers. Designed and implemented microservices architecture serving 2M+ requests/day. Built LLM-powered customer support automation reducing ticket resolution time by 40%.",
+            "technologies": [
+                "Python",
+                "FastAPI",
+                "LangChain",
+                "OpenAI",
+                "PostgreSQL",
+                "Redis",
+                "Docker",
+                "Kubernetes",
+                "AWS"
+            ]
+        },
+        {
+            "company": "DataFlow Solutions",
+            "role": "Software Engineer",
+            "period": "2018 – 2021",
+            "description": "Developed data processing pipelines handling 50TB+ daily. Implemented real-time analytics dashboards and RESTful APIs for enterprise clients.",
+            "technologies": [
+                "Python",
+                "Django",
+                "Apache Kafka",
+                "Elasticsearch",
+                "MongoDB",
+                "GCP"
+            ]
+        },
+        {
+            "company": "StartupXYZ",
+            "role": "Junior Developer",
+            "period": "2016 – 2018",
+            "description": "Full-stack development for e-commerce platform. Built payment integration and inventory management modules.",
+            "technologies": [
+                "Python",
+                "Flask",
+                "React",
+                "PostgreSQL",
+                "Heroku"
+            ]
+        }
+    ],
+    "education": [
+        {
+            "institution": "Istanbul Technical University",
+            "degree": "M.Sc.",
+            "field": "Computer Engineering",
+            "period": "2014 – 2016"
+        },
+        {
+            "institution": "Istanbul Technical University",
+            "degree": "B.Sc.",
+            "field": "Computer Engineering",
+            "period": "2010 – 2014"
+        }
+    ],
+    "skills": {
+        "languages": [
+            "Python",
+            "TypeScript",
+            "Go",
+            "SQL"
+        ],
+        "frameworks": [
+            "FastAPI",
+            "Django",
+            "Flask",
+            "LangChain",
+            "React"
+        ],
+        "tools": [
+            "Docker",
+            "Kubernetes",
+            "Git",
+            "CI/CD",
+            "Terraform"
+        ],
+        "cloud": [
+            "AWS",
+            "GCP",
+            "Azure"
+        ],
+        "ai_ml": [
+            "OpenAI API",
+            "LangChain",
+            "FAISS",
+            "Prompt Engineering",
+            "RAG",
+            "Fine-tuning"
+        ],
+        "databases": [
+            "PostgreSQL",
+            "MongoDB",
+            "Redis",
+            "Elasticsearch"
+        ],
+        "soft_skills": [
+            "Team Leadership",
+            "Technical Mentoring",
+            "Agile/Scrum",
+            "System Design"
+        ]
+    },
+    "certifications": [
+        {
+            "name": "AWS Solutions Architect – Associate",
+            "issuer": "Amazon Web Services",
+            "year": 2022
+        },
+        {
+            "name": "Professional Scrum Master I",
+            "issuer": "Scrum.org",
+            "year": 2020
+        }
+    ],
+    "languages": [
+        {
+            "language": "Turkish",
+            "level": "Native"
+        },
+        {
+            "language": "English",
+            "level": "Fluent (C1)"
+        }
+    ],
+    "projects": [
+        {
+            "name": "LLM Customer Support Agent",
+            "description": "Multi-agent system using LangChain for automated customer ticket triage and response generation. Reduced average resolution time by 40%.",
+            "technologies": [
+                "Python",
+                "LangChain",
+                "OpenAI",
+                "FastAPI",
+                "PostgreSQL"
+            ]
+        },
+        {
+            "name": "Real-time Analytics Platform",
+            "description": "Streaming data pipeline processing 50TB+ daily with real-time dashboards for business intelligence.",
+            "technologies": [
+                "Python",
+                "Apache Kafka",
+                "Elasticsearch",
+                "Grafana"
+            ]
+        }
+    ],
+    "preferences": {
+        "work_type": "Remote or Hybrid",
+        "notice_period": "1 month",
+        "willing_to_relocate": false,
+        "preferred_roles": [
+            "Senior Software Engineer",
+            "Staff Engineer",
+            "AI/ML Engineer",
+            "Tech Lead"
+        ]
+    }
+}
