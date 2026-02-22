@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Career Assistant AI Agent</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-input: #21262d;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent: #58a6ff;
+            --accent-hover: #79c0ff;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --orange: #e3b341;
+            --purple: #bc8cff;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ─── Header ─── */
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        header h1 span {
+            color: var(--accent);
+        }
+
+        .health-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: background 0.3s;
+        }
+
+        .health-dot.online {
+            background: var(--green);
+        }
+
+        .health-dot.offline {
+            background: var(--red);
+        }
+
+        /* ─── Main Layout ─── */
+        .container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            grid-template-rows: 1fr auto;
+            gap: 0;
+            height: calc(100vh - 53px);
+        }
+
+        /* ─── Left Panel ─── */
+        .left-panel {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        .test-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .test-btn {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+
+        .test-btn .test-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .test-btn .test-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        /* ─── Right Panel ─── */
+        .right-panel {
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            gap: 12px;
+        }
+
+        .empty-state svg {
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+        }
+
+        /* ─── Response Card ─── */
+        .response-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .response-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-approved {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--green);
+        }
+
+        .status-human {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--red);
+        }
+
+        .status-failed {
+            background: rgba(227, 179, 65, 0.15);
+            color: var(--yellow);
+        }
+
+        .category-badge {
+            font-size: 12px;
+            color: var(--purple);
+            background: rgba(188, 140, 255, 0.12);
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .response-text {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* ─── Score Ring ─── */
+        .score-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 28px;
+        }
+
+        .score-ring-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+        }
+
+        .score-ring-container svg {
+            transform: rotate(-90deg);
+            width: 100px;
+            height: 100px;
+        }
+
+        .score-ring-bg {
+            fill: none;
+            stroke: var(--bg-input);
+            stroke-width: 8;
+        }
+
+        .score-ring-fg {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease, stroke 0.3s;
+        }
+
+        .score-ring-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* ─── Criteria Bars ─── */
+        .criteria-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .criteria-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .criteria-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .criteria-label span:first-child {
+            color: var(--text-secondary);
+        }
+
+        .criteria-label span:last-child {
+            font-weight: 600;
+        }
+
+        .criteria-bar {
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .criteria-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+
+        /* ─── Meta Row ─── */
+        .meta-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ─── Bottom Log Panel ─── */
+        .log-panel {
+            grid-column: 1 / -1;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .log-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-entries {
+            padding: 8px 20px;
+        }
+
+        .log-entry {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            padding: 3px 0;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-entry .log-time {
+            color: var(--text-muted);
+            min-width: 80px;
+        }
+
+        .log-entry .log-level {
+            min-width: 50px;
+            font-weight: 600;
+        }
+
+        .log-level-info {
+            color: var(--accent);
+        }
+
+        .log-level-ok {
+            color: var(--green);
+        }
+
+        .log-level-warn {
+            color: var(--yellow);
+        }
+
+        .log-level-err {
+            color: var(--red);
+        }
+
+        .log-entry .log-msg {
+            color: var(--text-secondary);
+        }
+
+        /* ─── Spinner ─── */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 860px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ── Header ────────────────────────────────────── -->
+    <header>
+        <h1>🤖 Career <span>Assistant</span> AI</h1>
+        <div class="health-badge">
+            <div class="health-dot" id="healthDot"></div>
+            <span id="healthLabel">Checking…</span>
+        </div>
+    </header>
+
+    <!-- ── Main Grid ─────────────────────────────────── -->
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="panel-title">Send Message</div>
+            <form id="msgForm">
+                <div class="form-group" style="margin-bottom:10px">
+                    <label for="sender">Sender (email)</label>
+                    <input id="sender" type="email" placeholder="hr@company.com" value="hr@techcorp.com" required />
+                </div>
+                <div class="form-group" style="margin-bottom:14px">
+                    <label for="message">Employer Message</label>
+                    <textarea id="message" placeholder="Type the employer's message here…" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" id="sendBtn">
+                    Send Message
+                </button>
+            </form>
+
+            <div class="divider"></div>
+
+            <div class="panel-title">Quick Test Scenarios</div>
+            <div class="test-buttons">
+                <button class="btn btn-outline test-btn" data-test="interview">
+                    <div>
+                        <div class="test-label">✅ Test 1 — Interview Invitation</div>
+                        <div class="test-desc">Standard mülakat davet mesajı</div>
+                    </div>
+                </button>
+                <button class="btn btn-outline test-btn" data-test="technical">
+                    <div>
+                        <div class="test-label">🔧 Test 2 — Technical Question</div>
+                        <div class="test-desc">LangChain deneyimi hakkında teknik soru</div>
+                    </div>
+                </button>
+                <button class="btn btn-outline test-btn" data-test="unknown">
+                    <div>
+                        <div class="test-label">⚠️ Test 3 — Unknown / Risky Question</div>
+                        <div class="test-desc">Maaş ve rekabet yasağı sorusu</div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn btn-outline" style="width:100%" id="fetchLogsBtn">
+                📋 Fetch Server Logs
+            </button>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel" id="rightPanel">
+            <div class="empty-state" id="emptyState">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <p>Send a message or run a test scenario</p>
+            </div>
+        </div>
+
+        <!-- Bottom Log Panel -->
+        <div class="log-panel">
+            <div class="log-header">
+                <span>Activity Log</span>
+                <button class="btn btn-outline" style="padding:4px 10px;font-size:12px" id="clearLogBtn">Clear</button>
+            </div>
+            <div class="log-entries" id="logEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // ─── Config ──────────────────────────────────────
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let backendOnline = false;
+
+        // ─── Test Payloads ───────────────────────────────
+        const TEST_MESSAGES = {
+            interview: {
+                sender: 'hr@techcorp.com',
+                message: "We'd like to invite you for a technical interview next Tuesday at 10 AM. Are you available?"
+            },
+            technical: {
+                sender: 'lead@startup.io',
+                message: 'Can you describe your experience with LangChain agents and tool-calling mechanisms?'
+            },
+            unknown: {
+                sender: 'recruiter@bigco.com',
+                message: 'What is the minimum salary you would accept and are you willing to sign a non-compete clause?'
+            }
+        };
+
+        // ─── Mock Responses (when backend offline) ───────
+        const MOCK_RESPONSES = {
+            interview: {
+                response: "Thank you very much for the invitation! I'd be happy to attend the technical interview on Tuesday at 10 AM. Could you please share the format of the interview and any preparation materials? I look forward to discussing how my experience aligns with the role. Best regards.",
+                evaluator_score: 0.92,
+                category: 'interview_invitation',
+                status: 'approved',
+                human_intervention_required: false,
+                iterations: 1,
+                scores: { professional_tone: 0.95, clarity: 0.90, completeness: 0.88, safety: 0.95, relevance: 0.92 }
+            },
+            technical: {
+                response: "I have hands-on experience with LangChain's agent framework, particularly the tool-calling pattern using create_tool_calling_agent and AgentExecutor. In my projects, I've implemented custom tools as BaseTool subclasses, integrated OpenAI function calling, and built multi-step agent pipelines with memory and structured output parsing. I'm comfortable with both the expression language (LCEL) and the legacy chain patterns.",
+                evaluator_score: 0.87,
+                category: 'technical_question',
+                status: 'approved',
+                human_intervention_required: false,
+                iterations: 1,
+                scores: { professional_tone: 0.88, clarity: 0.90, completeness: 0.85, safety: 0.90, relevance: 0.82 }
+            },
+            unknown: {
+                response: "I appreciate your question, however salary expectations and non-compete clauses are topics I'd prefer to discuss directly. I'll get back to you after consulting on these matters.",
+                evaluator_score: 0.0,
+                category: 'unknown',
+                status: 'human_intervention',
+                human_intervention_required: true,
+                iterations: 0,
+                scores: { professional_tone: 0.0, clarity: 0.0, completeness: 0.0, safety: 0.0, relevance: 0.0 }
+            }
+        };
+
+        // ─── DOM Refs ────────────────────────────────────
+        const $form = document.getElementById('msgForm');
+        const $sender = document.getElementById('sender');
+        const $message = document.getElementById('message');
+        const $sendBtn = document.getElementById('sendBtn');
+        const $rightPanel = document.getElementById('rightPanel');
+        const $emptyState = document.getElementById('emptyState');
+        const $logEntries = document.getElementById('logEntries');
+        const $healthDot = document.getElementById('healthDot');
+        const $healthLabel = document.getElementById('healthLabel');
+
+        // ─── Logging ─────────────────────────────────────
+        function addLog(level, msg) {
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const cls = { info: 'log-level-info', ok: 'log-level-ok', warn: 'log-level-warn', err: 'log-level-err' }[level] || '';
+            const el = document.createElement('div');
+            el.className = 'log-entry';
+            el.innerHTML = `<span class="log-time">${time}</span><span class="log-level ${cls}">${level.toUpperCase()}</span><span class="log-msg">${msg}</span>`;
+            $logEntries.prepend(el);
+        }
+
+        document.getElementById('clearLogBtn').addEventListener('click', () => {
+            $logEntries.innerHTML = '';
+        });
+
+        // ─── Health Check ────────────────────────────────
+        async function checkHealth() {
+            try {
+                const r = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
+                if (r.ok) {
+                    backendOnline = true;
+                    $healthDot.className = 'health-dot online';
+                    $healthLabel.textContent = 'Backend Online';
+                    return;
+                }
+            } catch { }
+            backendOnline = false;
+            $healthDot.className = 'health-dot offline';
+            $healthLabel.textContent = 'Offline (mock mode)';
+        }
+        checkHealth();
+        setInterval(checkHealth, 15000);
+
+        // ─── Score Color ─────────────────────────────────
+        function scoreColor(v) {
+            if (v >= 0.75) return 'var(--green)';
+            if (v >= 0.50) return 'var(--yellow)';
+            return 'var(--red)';
+        }
+
+        // ─── Render Response ─────────────────────────────
+        function renderResponse(data) {
+            $emptyState.style.display = 'none';
+
+            // Remove previous card if any
+            const prev = document.querySelector('.response-card');
+            if (prev) prev.remove();
+
+            const statusCls = data.status === 'approved' ? 'status-approved'
+                : data.status === 'human_intervention' ? 'status-human'
+                    : 'status-failed';
+            const statusLabel = data.status === 'approved' ? '✓ Approved'
+                : data.status === 'human_intervention' ? '⚠ Human Intervention'
+                    : '✗ Revision Failed';
+
+            const score = data.evaluator_score;
+            const circumference = 2 * Math.PI * 42;
+            const offset = circumference - (score * circumference);
+            const color = scoreColor(score);
+
+            const scores = data.scores || {};
+            const criteria = [
+                { key: 'professional_tone', label: 'Professional Tone', weight: '25%' },
+                { key: 'clarity', label: 'Clarity', weight: '20%' },
+                { key: 'completeness', label: 'Completeness', weight: '20%' },
+                { key: 'safety', label: 'Safety', weight: '25%' },
+                { key: 'relevance', label: 'Relevance', weight: '10%' },
+            ];
+
+            const criteriaHTML = criteria.map(c => {
+                const v = scores[c.key] || 0;
+                return `
+          <div class="criteria-item">
+            <div class="criteria-label">
+              <span>${c.label} (${c.weight})</span>
+              <span style="color:${scoreColor(v)}">${(v * 100).toFixed(0)}%</span>
+            </div>
+            <div class="criteria-bar">
+              <div class="criteria-bar-fill" style="width:${v * 100}%;background:${scoreColor(v)}"></div>
+            </div>
+          </div>`;
+            }).join('');
+
+            const card = document.createElement('div');
+            card.className = 'response-card';
+            card.innerHTML = `
+        <div class="response-header">
+          <div class="response-status ${statusCls}">${statusLabel}</div>
+          <div class="category-badge">${data.category}</div>
+        </div>
+        <div class="response-text">${data.response}</div>
+        <div class="score-section">
+          <div class="score-ring-container">
+            <svg viewBox="0 0 100 100">
+              <circle class="score-ring-bg" cx="50" cy="50" r="42"/>
+              <circle class="score-ring-fg" cx="50" cy="50" r="42"
+                      stroke="${color}"
+                      stroke-dasharray="${circumference}"
+                      stroke-dashoffset="${offset}"/>
+            </svg>
+            <div class="score-ring-label" style="color:${color}">${(score * 100).toFixed(0)}</div>
+          </div>
+          <div class="criteria-list">${criteriaHTML}</div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item">🔄 Iterations: <strong>${data.iterations}</strong></div>
+          <div class="meta-item">👤 Intervention: <strong>${data.human_intervention_required ? 'Yes' : 'No'}</strong></div>
+          <div class="meta-item">📡 ${backendOnline ? 'Live API' : 'Mock Data'}</div>
+        </div>`;
+
+            $rightPanel.prepend(card);
+        }
+
+        // ─── Send Message ────────────────────────────────
+        async function sendMessage(sender, message, testKey = null) {
+            $sendBtn.disabled = true;
+            $sendBtn.innerHTML = '<span class="spinner"></span> Processing…';
+            addLog('info', `Sending message from ${sender}…`);
+
+            let data;
+            if (backendOnline) {
+                try {
+                    const r = await fetch(`${API_BASE}/message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sender, message }),
+                    });
+                    data = await r.json();
+                    addLog('ok', `Response received — status=${data.status} score=${data.evaluator_score}`);
+                } catch (e) {
+                    addLog('err', `API error: ${e.message}`);
+                    if (testKey && MOCK_RESPONSES[testKey]) {
+                        data = MOCK_RESPONSES[testKey];
+                        addLog('warn', 'Falling back to mock data');
+                    }
+                }
+            } else {
+                // Mock mode
+                await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+                data = testKey ? MOCK_RESPONSES[testKey] : MOCK_RESPONSES.interview;
+                addLog('warn', 'Backend offline — using mock response');
+            }
+
+            if (data) {
+                renderResponse(data);
+            }
+
+            $sendBtn.disabled = false;
+            $sendBtn.innerHTML = 'Send Message';
+        }
+
+        // ─── Form Submit ─────────────────────────────────
+        $form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage($sender.value, $message.value);
+        });
+
+        // ─── Test Buttons ────────────────────────────────
+        document.querySelectorAll('.test-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.test;
+                const payload = TEST_MESSAGES[key];
+                $sender.value = payload.sender;
+                $message.value = payload.message;
+                sendMessage(payload.sender, payload.message, key);
+            });
+        });
+
+        // ─── Fetch Logs ──────────────────────────────────
+        document.getElementById('fetchLogsBtn').addEventListener('click', async () => {
+            if (!backendOnline) {
+                addLog('warn', 'Cannot fetch logs — backend offline');
+                return;
+            }
+            try {
+                const r = await fetch(`${API_BASE}/logs`);
+                const logs = await r.json();
+                addLog('info', `Fetched ${logs.length} log entries from server`);
+                logs.slice(0, 10).forEach(l => {
+                    addLog('info', `[${l.status}] ${l.sender || '—'} → score=${l.evaluator_score ?? '—'} cat=${l.category || '—'}`);
+                });
+            } catch (e) {
+                addLog('err', `Failed to fetch logs: ${e.message}`);
+            }
+        });
+
+        // ─── Init Log ────────────────────────────────────
+        addLog('info', 'Career Assistant UI initialized');
+    </script>
+</body>
+
+</html>
