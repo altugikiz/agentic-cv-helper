@@ -47,6 +47,10 @@ class MessageResponse(BaseModel):
         description="Whether a human needs to handle this message",
     )
     iterations: int = Field(default=1, ge=0, description="Number of revision iterations used (0 = human intervention before evaluation)")
+    pending_id: Optional[str] = Field(
+        default=None,
+        description="ID of the pending question when human intervention is required",
+    )
 
 
 class HealthResponse(BaseModel):
@@ -67,6 +71,16 @@ class LogEntry(BaseModel):
     status: str = ""
     human_intervention_required: bool = False
     iterations: int = 1
+
+
+class AdminResponseRequest(BaseModel):
+    """Body for POST /api/v1/pending/{id}/respond."""
+
+    response: str = Field(
+        ...,
+        min_length=1,
+        description="The admin's manual response to the pending question",
+    )
 
 
 class TestResult(BaseModel):
