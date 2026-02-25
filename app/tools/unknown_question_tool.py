@@ -19,20 +19,39 @@ logger = logging.getLogger(__name__)
 # ── Risk keyword patterns (case-insensitive) ─────────────────────────────────
 
 RISK_PATTERNS: list[tuple[str, str]] = [
-    # Salary / compensation
+    # Salary / compensation (EN)
     (r"\b(salary|compensation|pay\s?(range|scale|rate)?|wage|remuneration|minimum.*(accept|expect))\b",
      "salary_negotiation"),
-    # Legal / contractual
+    # Salary / compensation (TR)
+    (r"(maaş|ücret|maaş\s?(beklenti|taleb|aralı[ğg])|ücret\s?(beklenti|taleb|aralı[ğg])|gelir\s?beklenti|asgari.*kabul)",
+     "salary_negotiation"),
+
+    # Legal / contractual (EN)
     (r"\b(non[- ]?compete|nda|non[- ]?disclosure|contract\s?clause|legal|lawsuit|litigation|arbitration)\b",
      "legal_contractual"),
-    # Relocation pressure
+    # Legal / contractual (TR)
+    (r"(rekabet\s?yasağı|gizlilik\s?sözleşme|sözleşme\s?madde|dava|hukuki|mahkeme|ihbar\s?süre|kıdem\s?tazminat|cezai\s?şart)",
+     "legal_contractual"),
+
+    # Relocation pressure (EN)
     (r"\b(must\s+relocate|mandatory\s+relocation|visa\s+sponsor)\b",
      "relocation_pressure"),
-    # Background / discrimination
+    # Relocation pressure (TR)
+    (r"(taşınma\s?zorunlu|zorunlu\s?taşınma|vize\s?sponsor|şehir\s?değiştir)",
+     "relocation_pressure"),
+
+    # Background / discrimination (EN)
     (r"\b(criminal\s+record|background\s+check|marital\s+status|religion|political)\b",
      "sensitive_personal"),
-    # Financial details
+    # Background / discrimination (TR)
+    (r"(sabıka\s?kayd|adli\s?sicil|medeni\s?(hal|durum)|din|siyasi\s?görüş|milliyet|etnik|hamile|engel\s?durum)",
+     "sensitive_personal"),
+
+    # Financial details (EN)
     (r"\b(bank\s+account|social\s+security|tax\s+id|ssn)\b",
+     "financial_personal"),
+    # Financial details (TR)
+    (r"(banka\s?hesab|banka\s?hesap|tc\s?kimlik|vergi\s?numar|sgk\s?numar|sosyal\s?güvenlik)",
      "financial_personal"),
 ]
 
@@ -41,9 +60,9 @@ class UnknownQuestionInput(BaseModel):
     """Input schema for the Unknown Question Detection tool."""
 
     message: str = Field(..., description="The employer's original message")
-    confidence: float = Field(
-        ..., ge=0, le=1,
-        description="Career Agent's self-reported confidence score",
+    confidence: Optional[float] = Field(
+        default=None, ge=0, le=1,
+        description="Career Agent's self-reported confidence score (optional for pre-LLM check)",
     )
 
 
@@ -70,17 +89,18 @@ class UnknownQuestionTool(BaseTool):
     # Configurable threshold — injected from settings
     confidence_threshold: float = 0.4
 
-    def _run(self, message: str, confidence: float) -> dict[str, Any]:
+    def _run(self, message: str, confidence: Optional[float] = None) -> dict[str, Any]:
         """Synchronous detection logic."""
         return self._detect(message, confidence)
 
-    async def _arun(self, message: str, confidence: float) -> dict[str, Any]:
+    async def _arun(self, message: str, confidence: Optional[float] = None) -> dict[str, Any]:
         """Async wrapper — detection is CPU-only so just delegates."""
         return self._detect(message, confidence)
 
     # ── Core logic ────────────────────────────────────────────────────────
 
-    def _detect(self, message: str, confidence: float) -> dict[str, Any]:
+    def _detect(self, message: str, confidence: Optional[float] = None) -> dict[str, Any]:
+        eff_confidence = confidence if confidence is not None else 1.0
         # 1. Check keyword risk patterns
         risk_match = self._match_risk_patterns(message)
         if risk_match:
@@ -90,11 +110,11 @@ class UnknownQuestionTool(BaseTool):
                 is_unknown=True,
                 reason=reason,
                 risk_category=category,
-                confidence=confidence,
+                confidence=eff_confidence,
             ).model_dump()
 
-        # 2. Check confidence threshold
-        if confidence < self.confidence_threshold:
+        # 2. Check confidence threshold (only when confidence is provided)
+        if confidence is not None and confidence < self.confidence_threshold:
             reason = (
                 f"Career Agent confidence ({confidence:.2f}) is below threshold "
                 f"({self.confidence_threshold}). The message may be outside the candidate's expertise."
@@ -113,7 +133,7 @@ class UnknownQuestionTool(BaseTool):
             is_unknown=False,
             reason="",
             risk_category="",
-            confidence=confidence,
+            confidence=eff_confidence,
         ).model_dump()
 
     @staticmethod
