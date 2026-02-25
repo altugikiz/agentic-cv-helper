@@ -29,6 +29,7 @@ class NotificationType(str, Enum):
     RESPONSE_APPROVED = "response_approved"
     UNKNOWN_QUESTION = "unknown_question"
     EVALUATION_FAILED = "evaluation_failed"
+    ADMIN_RESPONSE = "admin_response"
 
 
 # ── Message templates (Markdown) ─────────────────────────────────────────────
@@ -51,8 +52,10 @@ TEMPLATES: dict[NotificationType, str] = {
         "⚠️ *Human Intervention Required*\n\n"
         "**From:** {sender}\n"
         "**Reason:** {reason}\n"
-        "**Risk Category:** {risk_category}\n\n"
-        "**Original Message:**\n{message}"
+        "**Risk Category:** {risk_category}\n"
+        "**Pending ID:** `{pending_id}`\n\n"
+        "**Original Message:**\n{message}\n\n"
+        "💡 Web panelden yanıtlayın."
     ),
     NotificationType.EVALUATION_FAILED: (
         "❌ *Evaluation Failed — Human Review Needed*\n\n"
@@ -61,6 +64,13 @@ TEMPLATES: dict[NotificationType, str] = {
         "**Iterations Used:** {iterations}\n\n"
         "**Last Response:**\n{response}\n\n"
         "**Feedback:**\n{feedback}"
+    ),
+    NotificationType.ADMIN_RESPONSE: (
+        "✍️ *Admin Response Submitted*\n\n"
+        "**Original Sender:** {sender}\n"
+        "**Pending ID:** `{pending_id}`\n\n"
+        "**Original Message:**\n{message}\n\n"
+        "**Admin Response:**\n{response}"
     ),
 }
 
