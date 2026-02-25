@@ -1,0 +1,57 @@
+[
+  {
+    "id": "6e93536bb4ba",
+    "sender": "test@company.com",
+    "message": "What is your salary expectation?",
+    "risk_category": "salary_negotiation",
+    "reason": "Risky content detected",
+    "timestamp": "2026-02-25T12:58:23.729484+00:00",
+    "status": "answered",
+    "admin_response": "We can discuss salary in person.",
+    "answered_at": "2026-02-25T12:58:23.729626+00:00"
+  },
+  {
+    "id": "673444ff9c4d",
+    "sender": "recruiter@bigco.com",
+    "message": "What is the minimum salary you would accept and are you willing to sign a non-compete clause?",
+    "risk_category": "salary_negotiation",
+    "reason": "Message contains risky content related to 'salary_negotiation'. Human review recommended.",
+    "timestamp": "2026-02-25T12:58:29.734363+00:00",
+    "status": "pending",
+    "admin_response": null,
+    "answered_at": null
+  },
+  {
+    "id": "a7d5a50da55b",
+    "sender": "test@company.com",
+    "message": "What is your salary expectation?",
+    "risk_category": "salary_negotiation",
+    "reason": "Risky content detected",
+    "timestamp": "2026-02-25T12:58:29.762831+00:00",
+    "status": "answered",
+    "admin_response": "We can discuss salary in person.",
+    "answered_at": "2026-02-25T12:58:29.762933+00:00"
+  },
+  {
+    "id": "ea51c8f897f1",
+    "sender": "test@company.com",
+    "message": "What is your salary expectation?",
+    "risk_category": "salary_negotiation",
+    "reason": "Risky content detected",
+    "timestamp": "2026-02-25T12:58:54.606728+00:00",
+    "status": "answered",
+    "admin_response": "We can discuss salary in person.",
+    "answered_at": "2026-02-25T12:58:54.606862+00:00"
+  },
+  {
+    "id": "5066f9836687",
+    "sender": "garantiBBVA@group.com",
+    "message": "Maaş talebiniz nedir?",
+    "risk_category": "salary_negotiation",
+    "reason": "Message contains risky content related to 'salary_negotiation'. Human review recommended.",
+    "timestamp": "2026-02-25T13:05:53.872552+00:00",
+    "status": "pending",
+    "admin_response": null,
+    "answered_at": null
+  }
+]
