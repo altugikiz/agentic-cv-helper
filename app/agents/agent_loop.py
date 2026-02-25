@@ -2,8 +2,9 @@
 
 Flow:
 1. Send "new message" notification
-2. Run Unknown Question Detection
-   → if risky → notify + return human_intervention_required
+2. Run Unknown Question Detection (keyword-only, NO LLM call)
+   → if risky → add to pending queue → notify via Telegram → return
+     human_intervention with "Yanıtınız hazırlanıyor" message
 3. Career Agent generates response
 4. Evaluator Agent scores the response
    → if approved → notify + return
@@ -26,6 +27,7 @@ from app.agents.evaluator_agent import EvaluatorAgent
 from app.tools.unknown_question_tool import UnknownQuestionTool
 from app.tools.notification_tool import NotificationTool
 from app.models.response_models import MessageResponse
+from app.models.pending_store import get_pending_store
 
 logger = logging.getLogger(__name__)
 
@@ -64,19 +66,20 @@ async def process_message(sender: str, message: str) -> MessageResponse:
         payload={"sender": sender, "message": message},
     )
 
-    # ── 2. Career Agent — first pass ──────────────────────────────────────
-    career_agent = CareerAgent()
-    agent_output = await career_agent.generate_response(message)
-
-    response_text: str = agent_output["response"]
-    confidence: float = agent_output["confidence"]
-    category: str = agent_output["category"]
-
-    # ── 3. Unknown Question Detection ─────────────────────────────────────
-    uq_result = await unknown_tool._arun(message=message, confidence=confidence)
+    # ── 2. Unknown Question Detection (keyword-only, NO LLM cost) ─────────
+    uq_result = await unknown_tool._arun(message=message)
 
     if uq_result["is_unknown"]:
-        # Notify human & return early
+        # Add to pending queue
+        store = get_pending_store()
+        pending = store.add(
+            sender=sender,
+            message=message,
+            risk_category=uq_result["risk_category"],
+            reason=uq_result["reason"],
+        )
+
+        # Notify human via Telegram
         await notify_tool._arun(
             notification_type="unknown_question",
             payload={
@@ -84,19 +87,29 @@ async def process_message(sender: str, message: str) -> MessageResponse:
                 "message": message,
                 "reason": uq_result["reason"],
                 "risk_category": uq_result["risk_category"],
+                "pending_id": pending.id,
             },
         )
+
         result = MessageResponse(
-            response=response_text,
+            response="Sorunuz alınmıştır. En kısa sürede size dönüş yapılacaktır.",
             evaluator_score=0.0,
-            category=category,
+            category=uq_result["risk_category"] or "unknown",
             status="human_intervention",
             human_intervention_required=True,
             iterations=0,
+            pending_id=pending.id,
         )
         _log_event(sender, message, result)
         return result
 
+    # ── 3. Career Agent — first pass ──────────────────────────────────────
+    career_agent = CareerAgent()
+    agent_output = await career_agent.generate_response(message)
+
+    response_text: str = agent_output["response"]
+    confidence: float = agent_output["confidence"]
+    category: str = agent_output["category"]
     # ── 4. Evaluator loop ─────────────────────────────────────────────────
     evaluator = EvaluatorAgent()
     iterations = 0
@@ -190,6 +203,7 @@ def _log_event(sender: str, message: str, result: MessageResponse) -> None:
         "status": result.status,
         "human_intervention_required": result.human_intervention_required,
         "iterations": result.iterations,
+        "pending_id": result.pending_id,
         "response_preview": result.response[:200],
     }
 
