@@ -512,6 +512,162 @@
                 border-bottom: 1px solid var(--border);
             }
         }
+
+        /* ─── Pending Questions Panel ─── */
+        .pending-section {
+            margin-top: 4px;
+        }
+
+        .pending-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .pending-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        .pending-card.answered {
+            opacity: 0.6;
+        }
+
+        .pending-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .pending-sender {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .pending-risk-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--red);
+            font-weight: 500;
+        }
+
+        .pending-message {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .pending-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .pending-response-area {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pending-response-area textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            padding: 8px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+            outline: none;
+        }
+
+        .pending-response-area textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .pending-answered-text {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--green);
+            padding: 8px 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            line-height: 1.4;
+        }
+
+        .pending-status-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .pending-status-badge.status-pending {
+            background: rgba(210, 153, 34, 0.15);
+            color: var(--yellow);
+        }
+
+        .pending-status-badge.status-answered {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--green);
+        }
+
+        .pending-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .pending-empty {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 16px 0;
+        }
+
+        .human-intervention-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            animation: fadeIn 0.3s ease;
+            text-align: center;
+        }
+
+        .human-intervention-card .hi-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .human-intervention-card .hi-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--yellow);
+            margin-bottom: 8px;
+        }
+
+        .human-intervention-card .hi-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .human-intervention-card .hi-pending-id {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -573,6 +729,21 @@
             <button class="btn btn-outline" style="width:100%" id="fetchLogsBtn">
                 📋 Fetch Server Logs
             </button>
+
+            <div class="divider"></div>
+
+            <!-- Pending Questions Section -->
+            <div class="pending-section">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div class="panel-title" style="margin-bottom:0">Pending Questions <span class="pending-count"
+                            id="pendingCount"></span></div>
+                    <button class="btn btn-outline" style="padding:4px 10px;font-size:12px" id="refreshPendingBtn">↻
+                        Refresh</button>
+                </div>
+                <div class="pending-list" id="pendingList">
+                    <div class="pending-empty">No pending questions</div>
+                </div>
+            </div>
         </div>
 
         <!-- Right Panel -->
@@ -638,12 +809,13 @@
                 scores: { professional_tone: 0.88, clarity: 0.90, completeness: 0.85, safety: 0.90, relevance: 0.82 }
             },
             unknown: {
-                response: "I appreciate your question, however salary expectations and non-compete clauses are topics I'd prefer to discuss directly. I'll get back to you after consulting on these matters.",
+                response: "Sorunuz alınmıştır. En kısa sürede size dönüş yapılacaktır.",
                 evaluator_score: 0.0,
-                category: 'unknown',
+                category: 'salary_negotiation',
                 status: 'human_intervention',
                 human_intervention_required: true,
                 iterations: 0,
+                pending_id: 'mock-001',
                 scores: { professional_tone: 0.0, clarity: 0.0, completeness: 0.0, safety: 0.0, relevance: 0.0 }
             }
         };
@@ -703,8 +875,16 @@
             $emptyState.style.display = 'none';
 
             // Remove previous card if any
-            const prev = document.querySelector('.response-card');
+            const prev = document.querySelector('.response-card, .human-intervention-card');
             if (prev) prev.remove();
+
+            // If human intervention → show waiting message instead of full response
+            if (data.status === 'human_intervention') {
+                renderHumanIntervention(data);
+                // Refresh pending list to show the new item
+                fetchPending();
+                return;
+            }
 
             const statusCls = data.status === 'approved' ? 'status-approved'
                 : data.status === 'human_intervention' ? 'status-human'
@@ -844,8 +1024,137 @@
             }
         });
 
+        // ─── Human Intervention Card ─────────────────────
+        function renderHumanIntervention(data) {
+            const card = document.createElement('div');
+            card.className = 'human-intervention-card';
+            card.innerHTML = `
+                <div class="hi-icon">⏳</div>
+                <div class="hi-title">Yanıtınız Hazırlanıyor</div>
+                <div class="hi-text">
+                    Bu soru riskli içerik tespit edildiği için otomatik yanıtlanmadı.<br>
+                    Sorunuz alınmıştır ve en kısa sürede size dönüş yapılacaktır.
+                </div>
+                ${data.pending_id ? `<div class="hi-pending-id">Takip No: ${data.pending_id}</div>` : ''}
+                <div style="margin-top:12px">
+                    <span class="category-badge">${data.category}</span>
+                </div>
+            `;
+            $rightPanel.prepend(card);
+        }
+
+        // ─── Pending Questions ───────────────────────────
+        const $pendingList = document.getElementById('pendingList');
+        const $pendingCount = document.getElementById('pendingCount');
+
+        const RISK_LABELS = {
+            salary_negotiation: '💰 Maaş',
+            legal_contractual: '⚖️ Hukuki',
+            relocation_pressure: '🏠 Taşınma',
+            sensitive_personal: '🔒 Kişisel',
+            financial_personal: '🏦 Finansal',
+            low_confidence: '❓ Düşük Güven',
+        };
+
+        async function fetchPending() {
+            if (!backendOnline) {
+                return;
+            }
+            try {
+                const r = await fetch(`${API_BASE}/pending`);
+                const items = await r.json();
+                renderPendingList(items);
+            } catch (e) {
+                addLog('err', `Failed to fetch pending: ${e.message}`);
+            }
+        }
+
+        function renderPendingList(items) {
+            const pendingItems = items.filter(i => i.status === 'pending');
+            const answeredItems = items.filter(i => i.status === 'answered');
+
+            $pendingCount.textContent = pendingItems.length > 0 ? `(${pendingItems.length})` : '';
+
+            if (items.length === 0) {
+                $pendingList.innerHTML = '<div class="pending-empty">No pending questions</div>';
+                return;
+            }
+
+            $pendingList.innerHTML = items.map(item => {
+                const riskLabel = RISK_LABELS[item.risk_category] || item.risk_category;
+                const time = new Date(item.timestamp).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+                const isPending = item.status === 'pending';
+                const statusCls = isPending ? 'status-pending' : 'status-answered';
+                const statusText = isPending ? '⏳ Bekliyor' : '✓ Yanıtlandı';
+
+                let actionHTML = '';
+                if (isPending) {
+                    actionHTML = `
+                        <div class="pending-response-area">
+                            <textarea id="resp-${item.id}" placeholder="Yanıtınızı yazın…"></textarea>
+                            <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="submitPendingResponse('${item.id}')">
+                                Yanıtla
+                            </button>
+                        </div>`;
+                } else {
+                    actionHTML = `<div class="pending-answered-text">${item.admin_response}</div>`;
+                }
+
+                return `
+                    <div class="pending-card ${isPending ? '' : 'answered'}">
+                        <div class="pending-meta">
+                            <span class="pending-sender">${item.sender}</span>
+                            <span class="pending-risk-badge">${riskLabel}</span>
+                        </div>
+                        <div class="pending-message">${item.message}</div>
+                        <div class="pending-time">${time} · <span class="pending-status-badge ${statusCls}">${statusText}</span></div>
+                        ${actionHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function submitPendingResponse(id) {
+            const textarea = document.getElementById(`resp-${id}`);
+            const response = textarea.value.trim();
+            if (!response) {
+                addLog('warn', 'Please enter a response');
+                return;
+            }
+
+            addLog('info', `Submitting response for pending ${id}…`);
+
+            try {
+                const r = await fetch(`${API_BASE}/pending/${id}/respond`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ response }),
+                });
+                if (!r.ok) {
+                    const err = await r.json();
+                    throw new Error(err.detail || r.statusText);
+                }
+                addLog('ok', `Response submitted for pending ${id}`);
+                fetchPending();
+            } catch (e) {
+                addLog('err', `Failed to submit response: ${e.message}`);
+            }
+        }
+
+        document.getElementById('refreshPendingBtn').addEventListener('click', () => {
+            fetchPending();
+            addLog('info', 'Refreshing pending questions…');
+        });
+
+        // Auto-refresh pending every 15 seconds
+        setInterval(() => {
+            if (backendOnline) fetchPending();
+        }, 15000);
+
         // ─── Init Log ────────────────────────────────────
         addLog('info', 'Career Assistant UI initialized');
+        // Initial fetch of pending questions
+        fetchPending();
     </script>
 </body>
 
