@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings, setup_logging
 from app.routers.message_router import router as message_router
+from app.routers.admin_router import router as admin_router
 
 # Initialise logging early
 setup_logging()
@@ -42,6 +43,7 @@ def create_app() -> FastAPI:
 
     # Include routers
     application.include_router(message_router)
+    application.include_router(admin_router)
 
     @application.on_event("startup")
     async def _startup() -> None:
